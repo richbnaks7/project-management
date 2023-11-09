@@ -34,6 +34,11 @@ class TaskController extends Controller
         $user = Auth::user();
         $setUser = (!$request->user_id) ? $user->id : $request->user_id;
 
+        if($user !== $setUser){
+            $assignedUser = User::find($setUser);
+            event(new TaskAssigned($task, $user));
+        }
+
         $task = Task::create([
             'title' => $request->title,
             'description' => $request->description,
@@ -41,11 +46,6 @@ class TaskController extends Controller
             'user_id' => $setUser,
             'project_id' => $request->project_id
         ]);
-
-        if($user !== $setUser){
-            $assignedUser = User::find($setUser);
-            event(new TaskAssigned($task, $user));
-        }
 
         return new TaskResource($task);
     }
